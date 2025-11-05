@@ -33,6 +33,7 @@ class TripletDataset(Dataset):
     _triplets : list[Triplet]
         A list of triplets.
     """
+
     def __init__(
         self,
         graph: td.graph.BaseGraph,
@@ -42,13 +43,13 @@ class TripletDataset(Dataset):
         self._graph = graph
         node_attrs = graph.node_attrs(attr_keys=[td.DEFAULT_ATTR_KEYS.NODE_ID, node_feature_key])
 
-        self._node_features = {
-            node_id: feat
-            for node_id, feat in zip(
+        self._node_features = dict(
+            zip(
                 node_attrs[td.DEFAULT_ATTR_KEYS.NODE_ID].to_list(),
                 node_attrs[node_feature_key].to_torch().float(),
+                strict=False,
             )
-        }
+        )
 
         edge_attrs = graph.edge_attrs()
 
@@ -62,9 +63,7 @@ class TripletDataset(Dataset):
 
             for positive_id in positive_ids.to_list():
                 for negative_id in negative_ids.to_list():
-                    self._triplets.append(
-                        Triplet(anchor_id, positive_id, negative_id)
-                    )
+                    self._triplets.append(Triplet(anchor_id, positive_id, negative_id))
 
     def __len__(self) -> int:
         return len(self._triplets)
@@ -82,9 +81,9 @@ class TripletDataset(Dataset):
         Returns
         -------
         tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
-            - anchor : (1, D)-dimensional anchor feature tensor
-            - positive : (1, D)-dimensional positive feature tensor
-            - negative : (1, D)-dimensional negative feature tensor
+            - anchor : (D,)-dimensional anchor feature tensor
+            - positive : (D,)-dimensional positive feature tensor
+            - negative : (D,)-dimensional negative feature tensor
         """
         triplet = self._triplets[index]
         return (
