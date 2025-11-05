@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 class Triplet(NamedTuple):
     anchor_id: int
     positive_id: int
-    negative_ids: list[int]
+    negative_id: int
 
 
 class TripletDataset(Dataset):
@@ -61,9 +61,10 @@ class TripletDataset(Dataset):
             negative_ids = source_ids.filter(~mask)
 
             for positive_id in positive_ids.to_list():
-                self._triplets.append(
-                    Triplet(anchor_id, positive_id, negative_ids.to_list())
-                )
+                for negative_id in negative_ids.to_list():
+                    self._triplets.append(
+                        Triplet(anchor_id, positive_id, negative_id)
+                    )
 
     def __len__(self) -> int:
         return len(self._triplets)
@@ -83,11 +84,11 @@ class TripletDataset(Dataset):
         tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
             - anchor : (1, D)-dimensional anchor feature tensor
             - positive : (1, D)-dimensional positive feature tensor
-            - negative : (M, D)-dimensional negative feature tensor, where M is the number of negative samples
+            - negative : (1, D)-dimensional negative feature tensor
         """
         triplet = self._triplets[index]
         return (
             self._node_features[triplet.anchor_id],
             self._node_features[triplet.positive_id],
-            torch.stack([self._node_features[i] for i in triplet.negative_ids]),
+            self._node_features[triplet.negative_id],
         )

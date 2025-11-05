@@ -39,19 +39,40 @@ def mock_graph() -> td.graph.InMemoryGraph:
 
 def test_triplet_dataset(mock_graph: td.graph.InMemoryGraph) -> None:
     dataset = TripletDataset(mock_graph, "feat", "ground_truth")
-    assert len(dataset) == 3
+    assert len(dataset) == 6
 
-    first_triplet = dataset[0]
-    torch.testing.assert_close(first_triplet[0], torch.Tensor([3, 3, 3]))
-    torch.testing.assert_close(first_triplet[1], torch.Tensor([0, 0, 0]))
-    torch.testing.assert_close(first_triplet[2], torch.Tensor([[1, 1, 1], [2, 2, 2]]))
+    # Anchor n3, positive n0, negative n1
+    triplet_0 = dataset[0]
+    torch.testing.assert_close(triplet_0[0], torch.Tensor([3, 3, 3]))
+    torch.testing.assert_close(triplet_0[1], torch.Tensor([0, 0, 0]))
+    torch.testing.assert_close(triplet_0[2], torch.Tensor([1, 1, 1]))
 
-    second_triplet = dataset[1]
-    torch.testing.assert_close(second_triplet[0], torch.Tensor([4, 4, 4]))
-    torch.testing.assert_close(second_triplet[1], torch.Tensor([1, 1, 1]))
-    torch.testing.assert_close(second_triplet[2], torch.Tensor([[0, 0, 0], [2, 2, 2]]))
+    # Anchor n3, positive n0, negative n2
+    triplet_1 = dataset[1]
+    torch.testing.assert_close(triplet_1[0], torch.Tensor([3, 3, 3]))
+    torch.testing.assert_close(triplet_1[1], torch.Tensor([0, 0, 0]))
+    torch.testing.assert_close(triplet_1[2], torch.Tensor([2, 2, 2]))
 
-    third_triplet = dataset[2]
-    torch.testing.assert_close(third_triplet[0], torch.Tensor([5, 5, 5]))
-    torch.testing.assert_close(third_triplet[1], torch.Tensor([1, 1, 1]))
-    torch.testing.assert_close(third_triplet[2], torch.Tensor([[0, 0, 0], [2, 2, 2]]))
+    # Anchor n4, positive n1, negative n0
+    triplet_2 = dataset[2]
+    torch.testing.assert_close(triplet_2[0], torch.Tensor([4, 4, 4]))
+    torch.testing.assert_close(triplet_2[1], torch.Tensor([1, 1, 1]))
+    torch.testing.assert_close(triplet_2[2], torch.Tensor([0, 0, 0]))
+
+    # Anchor n4, positive n1, negative n2
+    triplet_3 = dataset[3]
+    torch.testing.assert_close(triplet_3[0], torch.Tensor([4, 4, 4]))
+    torch.testing.assert_close(triplet_3[1], torch.Tensor([1, 1, 1]))
+    torch.testing.assert_close(triplet_3[2], torch.Tensor([2, 2, 2]))
+
+    # Anchor n5, positive n1, negative n0
+    triplet_4 = dataset[4]
+    torch.testing.assert_close(triplet_4[0], torch.Tensor([5, 5, 5]))
+    torch.testing.assert_close(triplet_4[1], torch.Tensor([1, 1, 1]))
+    torch.testing.assert_close(triplet_4[2], torch.Tensor([0, 0, 0]))
+
+    # Anchor n5, positive n1, negative n2
+    triplet_5 = dataset[5]
+    torch.testing.assert_close(triplet_5[0], torch.Tensor([5, 5, 5]))
+    torch.testing.assert_close(triplet_5[1], torch.Tensor([1, 1, 1]))
+    torch.testing.assert_close(triplet_5[2], torch.Tensor([2, 2, 2]))
