@@ -1,24 +1,6 @@
 # Contrastive TD
 
-A Python library for applying contrastive learning to multi-object tracking data.
-
-## Overview
-
-Contrastive TD implements auxiliary routines to implement contrastive learning on multi-object tracking data.
-
-It builds on [tracksdata](https://github.com/royerlab/tracksdata), a standardized framework for representing tracking problems as graphs, where detections are nodes and connections are edges.
-
-This library provides:
-
-- **TripletDataset**: Converts tracking graphs into triplet datasets (anchor, positive, negative) for contrastive learning
-- **Training utilities**: A flexible training loop supporting custom loss functions, optimizers, and learning rate schedulers
-- **Graph-based sampling**: Automatically generates triplets from ground truth tracking annotations
-
-## Use Cases
-
-- Learning discriminative embeddings for object re-identification in tracking scenarios
-- Training neural networks to distinguish between true and false object associations
-- Improving tracking performance through learned similarity metrics
+A toolbox for contrastive learning on [tracksdata](https://github.com/royerlab/tracksdata) graphs.
 
 ## Installation
 
@@ -61,7 +43,3 @@ training_loop(
     opt=optimizer
 )
 ```
-
-## License
-
-MIT
