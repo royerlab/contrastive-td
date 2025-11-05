@@ -2,14 +2,13 @@ from typing import NamedTuple
 
 import torch
 import tracksdata as td
-import polars as pl
 from torch.utils.data import Dataset
 
 
 class Triplet(NamedTuple):
     anchor_id: int
     positive_id: int
-    negative_ids: torch.Tensor
+    negative_ids: list[int]
 
 
 class TripletDataset(Dataset):
@@ -41,7 +40,7 @@ class TripletDataset(Dataset):
         edge_ground_truth_key: str,
     ):
         self._graph = graph
-        node_attrs: pl.DataFrame = graph.node_attrs([td.DEFAULT_ATTR_KEYS.NODE_ID, node_feature_key])
+        node_attrs = graph.node_attrs(attr_keys=[td.DEFAULT_ATTR_KEYS.NODE_ID, node_feature_key])
 
         self._node_features = {
             node_id: feat
@@ -51,19 +50,19 @@ class TripletDataset(Dataset):
             )
         }
 
-        edge_attrs: pl.DataFrame = graph.edge_attrs()
+        edge_attrs = graph.edge_attrs()
 
         self._triplets = []
 
-        for (anchor_id,), group in edge_attrs.group_by(td.DEFAULT_ATTR_KEYS.EDGE_TARGET):
+        for (anchor_id,), group in edge_attrs.group_by(td.DEFAULT_ATTR_KEYS.EDGE_TARGET, maintain_order=True):
             mask = group[edge_ground_truth_key]
-            source_ids = group[td.DEFAULT_ATTR_KEYS.EDGE_SOURCE].to_torch()
-            positive_ids = source_ids[mask]
-            negative_ids = source_ids[~mask]
+            source_ids = group[td.DEFAULT_ATTR_KEYS.EDGE_SOURCE]
+            positive_ids = source_ids.filter(mask)
+            negative_ids = source_ids.filter(~mask)
 
-            for positive_id in positive_ids:
+            for positive_id in positive_ids.to_list():
                 self._triplets.append(
-                    Triplet(anchor_id, positive_id, negative_ids)
+                    Triplet(anchor_id, positive_id, negative_ids.to_list())
                 )
 
     def __len__(self) -> int:
@@ -87,7 +86,8 @@ class TripletDataset(Dataset):
             - negative : (M, D)-dimensional negative feature tensor, where M is the number of negative samples
         """
         triplet = self._triplets[index]
-        return tuple(
-            self._node_features[node_id]
-            for node_id in triplet
+        return (
+            self._node_features[triplet.anchor_id],
+            self._node_features[triplet.positive_id],
+            torch.stack([self._node_features[i] for i in triplet.negative_ids]),
         )
