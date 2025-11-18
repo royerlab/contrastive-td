@@ -1,5 +1,4 @@
 from typing import Protocol
-from abc import ABC, abstractmethod
 
 import torch
 from tqdm import tqdm
@@ -54,31 +53,41 @@ def training_loop(
     lr_scheduler : torch.optim.lr_scheduler.LRScheduler | None, optional
         The learning rate scheduler to use, applied after each epoch.
     """
-
     model.train()
+
+    device = next(model.parameters()).device
 
     for epoch in range(epochs):
         total_loss = 0.0
         total_steps = 0
-        
+
         pbar = tqdm(dataset, desc=f"Epoch {epoch}", total=len(dataset))
 
         for anchor, positive, negatives in pbar:
             opt.zero_grad()
+
+            anchor = anchor.to(device)
+            positive = positive.to(device)
+            negatives = negatives.to(device)
+
             anchor = model(anchor)
             positive = model(positive)
-            negatives = model(negatives)
+            negatives = model(negatives).to(device)
             loss = loss_func(anchor, positive, negatives)
             loss.backward()
             opt.step()
 
             with torch.no_grad():
                 loss = loss.item()
-                pbar.set_postfix(loss=loss)
+                pbar.set_postfix(loss=f"{loss:0.6f}")
                 total_loss += loss
                 total_steps += 1
-        
+
         print(f"Epoch {epoch} loss: {total_loss / total_steps}")
+
+        if total_loss <= 1e-8:
+            print("Loss is very small, convergence reached, stopping training")
+            break
 
         if lr_scheduler is not None:
             lr_scheduler.step()
