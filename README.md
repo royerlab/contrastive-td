@@ -17,7 +17,7 @@ from contrastive_td.data import TripletDataset
 from contrastive_td.fitting import training_loop
 
 # Load your tracking graph
-graph = td.load_graph("path/to/tracking/data")
+graph = td.graph.InMemoryGraph("path/to/tracking/data")
 
 # Create triplet dataset
 dataset = TripletDataset(
